@@ -5,20 +5,59 @@ output:
     keep_md: true
 ---
 
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+```
 
 ## Loading and preprocessing the data
+
+```{r}
+data <- read_csv("activity.zip") %>%
+  mutate(minute=((interval %/% 100) * 60 + interval %% 100))
+```
 
 
 
 ## What is mean total number of steps taken per day?
 
+```{r}
+steps_per_day <- data %>%
+  group_by(date) %>%
+  summarize(steps=sum(steps, na.rm=TRUE))
+ggplot(steps_per_day, aes(x=date, y=steps)) +
+  geom_col() +
+  xlab("Date") + ylab("Steps") + ggtitle("Mean steps per day")
+```
+
+The median steps per day taken is `r median(steps_per_day$steps)`, the mean steps per day taken are `r mean(steps_per_day$steps)`.
 
 
 ## What is the average daily activity pattern?
 
+```{r}
+steps_per_interval <- data %>%
+  group_by(minute, interval) %>%
+  summarize(steps=mean(steps, na.rm=TRUE))
+ggplot(steps_per_interval, aes(x=minute, y=steps)) +
+  geom_line() + 
+  xlab("Minute of the day") + ylab("Steps") +
+  ggtitle("Mean steps per 5-minute interval")
+```
 
+```{r}
+max_interval <- (steps_per_interval %>%
+  arrange(desc(steps)))[1,]
+```
+
+The `r max_interval$interval` contains the most steps.
 
 ## Imputing missing values
+
+There are `r sum(is.na(data$steps))` rows with missing step values.
+
 
 
 
